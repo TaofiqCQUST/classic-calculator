@@ -33,18 +33,12 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Extract calculator source
-        run: |
-          unzip -q ClassicCalculator-Android-source.zip -d source
-          test -f source/ClassicCalculator/settings.gradle
-
       - name: Build debug APK
-        working-directory: source/ClassicCalculator
         run: gradle --no-daemon :app:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: calculator-debug-apk
-          path: source/ClassicCalculator/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
