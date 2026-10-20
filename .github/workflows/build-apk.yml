@@ -1,0 +1,50 @@
+name: Build calculator APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Extract calculator source
+        run: |
+          unzip -q ClassicCalculator-Android-source.zip -d source
+          test -f source/ClassicCalculator/settings.gradle
+
+      - name: Build debug APK
+        working-directory: source/ClassicCalculator
+        run: gradle --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-debug-apk
+          path: source/ClassicCalculator/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
